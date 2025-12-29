@@ -1,62 +1,99 @@
-import { Separator } from "@/components/ui/separator";
+import { motion } from "framer-motion";
 
 export default function About() {
   return (
-    <div className="container max-w-4xl py-12 px-4 md:px-6">
-      <div className="text-center mb-16 space-y-4">
-        <h1 className="font-serif text-5xl font-bold">Our Craft</h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Dedicated to preserving the art of traditional leatherworking in a modern world.
-        </p>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-12 items-center mb-20">
-        <div className="aspect-square rounded-lg bg-muted overflow-hidden">
-           {/* Artisan working */}
-           <img 
-            src="https://pixabay.com/get/gd2349275774b819078324a655a35bd8d85e717b0fac9a809add99bbef49438a60d519fec3eeda3367fea3ba72b0aee909bb362cd41de622e570a303ad612453c_1280.jpg" 
-            alt="Artisan working on leather"
-            className="w-full h-full object-cover"
-           />
+    <div className="pt-32 pb-24 min-h-screen bg-background">
+      <div className="container-wide">
+        
+        {/* Hero Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mb-24">
+          <motion.div 
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <span className="text-primary/60 font-bold tracking-widest uppercase text-sm block mb-4">Our Heritage</span>
+            <h1 className="font-serif text-5xl md:text-6xl font-bold mb-8 text-primary leading-tight">
+              Crafting Legacy <br /> One Stitch at a Time
+            </h1>
+            <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
+              <p>
+                H&K Leather Craft was born from a simple desire: to create items that don't just last, but get better with time. In a world of fast fashion and disposable goods, we stand for permanence.
+              </p>
+              <p>
+                Founded by two friends with a shared passion for traditional craftsmanship, our workshop is a place where slow manufacturing is celebrated. We don't rush. We don't cut corners. We simply make the best leather goods we possibly can.
+              </p>
+            </div>
+          </motion.div>
+          
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8 }}
+            className="relative"
+          >
+            <div className="absolute -inset-4 border-2 border-secondary/50 rounded-sm -z-10 translate-x-4 translate-y-4" />
+            {/* Unsplash image: Leather craftsman working */}
+            <img 
+              src="https://images.unsplash.com/photo-1550505193-429631b1db38?q=80&w=2070&auto=format&fit=crop"
+              alt="Craftsman working on leather" 
+              className="w-full h-auto rounded-sm shadow-2xl"
+            />
+          </motion.div>
         </div>
-        <div className="space-y-6">
-          <h2 className="font-serif text-3xl font-bold">The H&K Story</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            Founded in 2020, H&K Leather Craft began with a simple mission: to create products that stand the test of time. 
-            In an era of fast fashion and disposable goods, we choose to slow down.
-          </p>
-          <p className="text-muted-foreground leading-relaxed">
-            Every wallet, bag, and belt is cut, stitched, and finished by hand in our workshop. We use only full-grain 
-            vegetable-tanned leather sourced from ethical tanneries. This material doesn't just endure wear—it improves with it, 
-            developing a unique patina that tells your story.
-          </p>
-        </div>
-      </div>
 
-      <Separator className="my-16" />
+        {/* Process Section */}
+        <div className="max-w-4xl mx-auto text-center mb-24">
+          <h2 className="font-serif text-4xl font-bold mb-16 text-primary">Our Process</h2>
+          
+          <div className="space-y-24">
+            <div className="flex flex-col md:flex-row items-center gap-12 text-left">
+              <div className="flex-1">
+                <span className="text-6xl font-serif text-secondary/30 font-bold block mb-4">01</span>
+                <h3 className="text-2xl font-bold mb-4">Sourcing</h3>
+                <p className="text-muted-foreground">We use exclusively full-grain vegetable-tanned leather from the Consorzio Vera Pelle Italiana. This leather is tanned using natural tannins from tree bark, a process that takes months but yields a material of unmatched character.</p>
+              </div>
+              <div className="flex-1 h-64 bg-gray-100 rounded-sm overflow-hidden">
+                <img 
+                  src="https://pixabay.com/get/g583308f3c5ea9aaa0dfc1d863d93fd14e73ccfc06671d229cda98c10fb1db1488c0ed48ab34b6d8c4e4fcb507234340051927d5d2aeb5589ba64f78f717d268d_1280.jpg" 
+                  alt="Leather hides"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
 
-      <div className="space-y-8 text-center">
-        <h2 className="font-serif text-3xl font-bold">Our Philosophy</h2>
-        <div className="grid md:grid-cols-3 gap-8 text-left">
-          <div className="p-6 bg-stone-50 rounded-lg">
-            <h3 className="font-serif text-xl font-bold mb-2">Materials First</h3>
-            <p className="text-sm text-muted-foreground">
-              We never compromise on materials. Full-grain leather, solid brass hardware, and waxed linen thread.
-            </p>
-          </div>
-          <div className="p-6 bg-stone-50 rounded-lg">
-            <h3 className="font-serif text-xl font-bold mb-2">Slow Fashion</h3>
-            <p className="text-sm text-muted-foreground">
-              We don't follow trends. We design classics that look as good in ten years as they do today.
-            </p>
-          </div>
-          <div className="p-6 bg-stone-50 rounded-lg">
-            <h3 className="font-serif text-xl font-bold mb-2">Transparency</h3>
-            <p className="text-sm text-muted-foreground">
-              We believe you should know where your goods come from and who made them.
-            </p>
+            <div className="flex flex-col md:flex-row-reverse items-center gap-12 text-left">
+              <div className="flex-1">
+                <span className="text-6xl font-serif text-secondary/30 font-bold block mb-4">02</span>
+                <h3 className="text-2xl font-bold mb-4">Cutting & Stitching</h3>
+                <p className="text-muted-foreground">Every piece is cut by hand to avoid imperfections in the hide. We use the traditional saddle stitch technique with waxed linen thread—stronger and more durable than any machine lockstitch.</p>
+              </div>
+              <div className="flex-1 h-64 bg-gray-100 rounded-sm overflow-hidden">
+                 <img 
+                  src="https://pixabay.com/get/g583308f3c5ea9aaa0dfc1d863d93fd14e73ccfc06671d229cda98c10fb1db1488c0ed48ab34b6d8c4e4fcb507234340051927d5d2aeb5589ba64f78f717d268d_1280.jpg" 
+                  alt="Stitching leather"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row items-center gap-12 text-left">
+              <div className="flex-1">
+                <span className="text-6xl font-serif text-secondary/30 font-bold block mb-4">03</span>
+                <h3 className="text-2xl font-bold mb-4">Finishing</h3>
+                <p className="text-muted-foreground">Edges are burnished to a glass-like finish using beeswax and canvas. The final product is conditioned with natural oils, ready to begin its journey with you.</p>
+              </div>
+              <div className="flex-1 h-64 bg-gray-100 rounded-sm overflow-hidden">
+                 <img 
+                  src="https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?q=80&w=1000&auto=format&fit=crop" 
+                  alt="Finished wallet"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
           </div>
         </div>
+
       </div>
     </div>
   );

@@ -1,10 +1,9 @@
 import { db } from "./db";
 import {
-  users, products, cartItems, orders, orderItems,
-  type User, type InsertUser, type Product, type InsertProduct,
-  type CartItem, type InsertCartItem, type Order, type InsertOrder
+  users, products,
+  type User, type InsertUser, type Product, type InsertProduct
 } from "@shared/schema";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -18,18 +17,6 @@ export interface IStorage {
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product | undefined>;
   deleteProduct(id: number): Promise<void>;
-
-  // Cart
-  getCartItems(userId: number): Promise<(CartItem & { product: Product })[]>;
-  getCartItem(userId: number, productId: number): Promise<CartItem | undefined>;
-  addCartItem(item: InsertCartItem): Promise<CartItem>;
-  updateCartItem(id: number, quantity: number): Promise<CartItem | undefined>;
-  removeCartItem(id: number): Promise<void>;
-  clearCart(userId: number): Promise<void>;
-
-  // Orders
-  createOrder(userId: number, items: (CartItem & { product: Product })[]): Promise<Order>;
-  getOrders(userId: number): Promise<Order[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -74,72 +61,6 @@ export class DatabaseStorage implements IStorage {
 
   async deleteProduct(id: number): Promise<void> {
     await db.delete(products).where(eq(products.id, id));
-  }
-
-  // Cart
-  async getCartItems(userId: number): Promise<(CartItem & { product: Product })[]> {
-    const items = await db.select({
-      cartItem: cartItems,
-      product: products
-    })
-    .from(cartItems)
-    .where(eq(cartItems.userId, userId))
-    .innerJoin(products, eq(cartItems.productId, products.id));
-
-    return items.map(item => ({ ...item.cartItem, product: item.product }));
-  }
-
-  async getCartItem(userId: number, productId: number): Promise<CartItem | undefined> {
-    const [item] = await db.select().from(cartItems)
-      .where(and(eq(cartItems.userId, userId), eq(cartItems.productId, productId)));
-    return item;
-  }
-
-  async addCartItem(item: InsertCartItem): Promise<CartItem> {
-    const [newItem] = await db.insert(cartItems).values(item).returning();
-    return newItem;
-  }
-
-  async updateCartItem(id: number, quantity: number): Promise<CartItem | undefined> {
-    const [updated] = await db.update(cartItems)
-      .set({ quantity })
-      .where(eq(cartItems.id, id))
-      .returning();
-    return updated;
-  }
-
-  async removeCartItem(id: number): Promise<void> {
-    await db.delete(cartItems).where(eq(cartItems.id, id));
-  }
-
-  async clearCart(userId: number): Promise<void> {
-    await db.delete(cartItems).where(eq(cartItems.userId, userId));
-  }
-
-  // Orders
-  async createOrder(userId: number, items: (CartItem & { product: Product })[]): Promise<Order> {
-    const total = items.reduce((sum, item) => sum + (Number(item.product.price) * item.quantity), 0);
-    
-    // Create order
-    const [order] = await db.insert(orders).values({
-      userId,
-      total: total.toString(),
-      status: "pending"
-    }).returning();
-
-    // Create order items
-    await db.insert(orderItems).values(items.map(item => ({
-      orderId: order.id,
-      productId: item.productId,
-      quantity: item.quantity,
-      price: item.product.price
-    })));
-
-    return order;
-  }
-
-  async getOrders(userId: number): Promise<Order[]> {
-    return await db.select().from(orders).where(eq(orders.userId, userId));
   }
 }
 

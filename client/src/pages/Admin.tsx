@@ -1,199 +1,249 @@
+import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { useProducts, useProductMutations } from "@/hooks/use-products";
-import { useLocation } from "wouter";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Plus, Edit, Trash, Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { insertProductSchema } from "@shared/schema";
-import { z } from "zod";
+import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from "@/hooks/use-products";
+import { Loader2, Plus, Edit, Trash2, X } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { type Product, type InsertProduct } from "@shared/schema";
 
-export default function Admin() {
-  const { user, isLoading: authLoading } = useAuth();
-  const [, setLocation] = useLocation();
+// Login Component (Internal to Admin page)
+function AdminLogin() {
+  const { login, isLoggingIn } = useAuth();
+  const [creds, setCreds] = useState({ username: "", password: "" });
 
-  useEffect(() => {
-    if (!authLoading && (!user || user.role !== "admin")) {
-      setLocation("/");
-    }
-  }, [user, authLoading, setLocation]);
-
-  if (authLoading || !user) return null;
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    login(creds);
+  };
 
   return (
-    <div className="container py-12 px-4 md:px-6">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="font-serif text-3xl font-bold">Product Management</h1>
-        <ProductDialog />
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <div className="max-w-md w-full bg-white p-8 rounded-sm shadow-xl border border-border">
+        <h1 className="text-2xl font-serif font-bold text-center mb-8">Admin Access</h1>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium mb-2">Username</label>
+            <input 
+              type="text" 
+              className="w-full p-3 border rounded-sm"
+              value={creds.username}
+              onChange={e => setCreds({...creds, username: e.target.value})}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Password</label>
+            <input 
+              type="password" 
+              className="w-full p-3 border rounded-sm"
+              value={creds.password}
+              onChange={e => setCreds({...creds, password: e.target.value})}
+            />
+          </div>
+          <button type="submit" className="w-full btn-primary" disabled={isLoggingIn}>
+            {isLoggingIn ? "Logging in..." : "Login"}
+          </button>
+        </form>
       </div>
-      <ProductTable />
     </div>
   );
 }
 
-function ProductTable() {
-  const { data: products, isLoading } = useProducts();
-  const { deleteProduct } = useProductMutations();
-
-  if (isLoading) return <Loader2 className="h-8 w-8 animate-spin mx-auto" />;
-
-  return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Image</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {products?.map((product) => (
-            <TableRow key={product.id}>
-              <TableCell>
-                <img
-                  src={product.imageUrl}
-                  alt={product.name}
-                  className="h-12 w-12 rounded object-cover"
-                />
-              </TableCell>
-              <TableCell className="font-medium">{product.name}</TableCell>
-              <TableCell className="capitalize">{product.category}</TableCell>
-              <TableCell>${Number(product.price).toFixed(2)}</TableCell>
-              <TableCell className="text-right space-x-2">
-                <ProductDialog product={product} />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-destructive"
-                  onClick={() => {
-                    if (confirm("Are you sure?")) deleteProduct.mutate(product.id);
-                  }}
-                >
-                  <Trash className="h-4 w-4" />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  );
-}
-
-// Reuse Zod schema but force price to number for API, handle string in form
-const formSchema = insertProductSchema.extend({
-  price: z.coerce.number().min(0.01),
-});
-
-function ProductDialog({ product }: { product?: any }) {
-  const [open, setOpen] = useState(false);
-  const { createProduct, updateProduct } = useProductMutations();
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: product || {
-      name: "",
-      description: "",
-      price: "",
-      category: "accessories",
-      imageUrl: "",
-    },
+// Product Form Component
+function ProductForm({ 
+  product, 
+  onClose 
+}: { 
+  product?: Product, 
+  onClose: () => void 
+}) {
+  const create = useCreateProduct();
+  const update = useUpdateProduct();
+  
+  const [formData, setFormData] = useState<InsertProduct>({
+    name: product?.name || "",
+    description: product?.description || "",
+    price: product?.price ? Number(product.price).toFixed(2) : "0.00",
+    category: product?.category || "accessories",
+    imageUrl: product?.imageUrl || "",
   });
 
-  const onSubmit = async (data: any) => {
-    try {
-      if (product) {
-        await updateProduct.mutateAsync({ id: product.id, ...data });
-      } else {
-        await createProduct.mutateAsync(data);
-      }
-      setOpen(false);
-      form.reset();
-    } catch (e) {
-      console.error(e);
+  const isEditing = !!product;
+  const isPending = create.isPending || update.isPending;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isEditing && product) {
+      update.mutate({ id: product.id, ...formData }, { onSuccess: onClose });
+    } else {
+      create.mutate(formData, { onSuccess: onClose });
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {product ? (
-          <Button variant="ghost" size="icon">
-            <Edit className="h-4 w-4" />
-          </Button>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium mb-1">Name</label>
+        <input 
+          className="w-full p-2 border rounded-sm"
+          value={formData.name}
+          onChange={e => setFormData({...formData, name: e.target.value})}
+          required
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">Description</label>
+        <textarea 
+          className="w-full p-2 border rounded-sm"
+          value={formData.description}
+          onChange={e => setFormData({...formData, description: e.target.value})}
+          required
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Price</label>
+          <input 
+            type="number" step="0.01"
+            className="w-full p-2 border rounded-sm"
+            value={formData.price}
+            onChange={e => setFormData({...formData, price: e.target.value})}
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Category</label>
+          <select 
+            className="w-full p-2 border rounded-sm bg-white"
+            value={formData.category}
+            onChange={e => setFormData({...formData, category: e.target.value})}
+          >
+            <option value="jackets">Jackets</option>
+            <option value="wallets">Wallets</option>
+            <option value="accessories">Accessories</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">Image URL</label>
+        <input 
+          className="w-full p-2 border rounded-sm"
+          value={formData.imageUrl}
+          onChange={e => setFormData({...formData, imageUrl: e.target.value})}
+          required
+          placeholder="https://..."
+        />
+      </div>
+      <div className="flex justify-end gap-3 pt-4">
+        <button type="button" onClick={onClose} className="btn-outline py-2">Cancel</button>
+        <button type="submit" className="btn-primary py-2" disabled={isPending}>
+          {isPending ? "Saving..." : (isEditing ? "Update Product" : "Create Product")}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+export default function Admin() {
+  const { user, isLoading: authLoading } = useAuth();
+  const { data: products, isLoading: productsLoading } = useProducts();
+  const deleteProduct = useDeleteProduct();
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  if (authLoading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin" /></div>;
+  if (!user || user.role !== "admin") return <AdminLogin />;
+
+  const handleDelete = (id: number) => {
+    if (confirm("Are you sure you want to delete this product?")) {
+      deleteProduct.mutate(id);
+    }
+  };
+
+  const handleEdit = (product: Product) => {
+    setEditingProduct(product);
+    setIsDialogOpen(true);
+  };
+
+  const handleCreate = () => {
+    setEditingProduct(null);
+    setIsDialogOpen(true);
+  };
+
+  return (
+    <div className="pt-32 pb-24 min-h-screen bg-gray-50">
+      <div className="container-wide">
+        <div className="flex justify-between items-center mb-12">
+          <h1 className="font-serif text-3xl font-bold text-primary">Product Management</h1>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <button onClick={handleCreate} className="btn-primary flex items-center gap-2">
+                <Plus className="w-4 h-4" /> Add Product
+              </button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg bg-white p-6 rounded-sm">
+              <DialogHeader>
+                <DialogTitle className="font-serif text-xl mb-4">
+                  {editingProduct ? "Edit Product" : "New Product"}
+                </DialogTitle>
+              </DialogHeader>
+              <ProductForm 
+                product={editingProduct || undefined} 
+                onClose={() => setIsDialogOpen(false)} 
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {productsLoading ? (
+          <div className="text-center py-12"><Loader2 className="animate-spin mx-auto" /></div>
         ) : (
-          <Button>
-            <Plus className="h-4 w-4 mr-2" /> Add Product
-          </Button>
+          <div className="bg-white rounded-sm shadow-sm border overflow-hidden">
+            <table className="w-full text-left">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="p-4 font-medium text-sm text-muted-foreground uppercase tracking-wider w-20">Image</th>
+                  <th className="p-4 font-medium text-sm text-muted-foreground uppercase tracking-wider">Name</th>
+                  <th className="p-4 font-medium text-sm text-muted-foreground uppercase tracking-wider">Category</th>
+                  <th className="p-4 font-medium text-sm text-muted-foreground uppercase tracking-wider">Price</th>
+                  <th className="p-4 font-medium text-sm text-muted-foreground uppercase tracking-wider text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {products?.map((product) => (
+                  <tr key={product.id} className="hover:bg-gray-50/50">
+                    <td className="p-4">
+                      <img src={product.imageUrl} alt="" className="w-12 h-12 object-cover rounded-sm bg-gray-100" />
+                    </td>
+                    <td className="p-4 font-medium">{product.name}</td>
+                    <td className="p-4">
+                      <span className="inline-block px-2 py-1 rounded-full bg-secondary/20 text-xs font-bold uppercase text-primary">
+                        {product.category}
+                      </span>
+                    </td>
+                    <td className="p-4 font-serif">${Number(product.price).toFixed(2)}</td>
+                    <td className="p-4 text-right space-x-2">
+                      <button 
+                        onClick={() => handleEdit(product)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(product.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {products?.length === 0 && (
+              <div className="p-12 text-center text-muted-foreground">No products found. Add one to get started.</div>
+            )}
+          </div>
         )}
-      </DialogTrigger>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{product ? "Edit Product" : "New Product"}</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label>Name</Label>
-            <Input {...form.register("name")} />
-            {form.formState.errors.name && (
-              <p className="text-sm text-destructive">{String(form.formState.errors.name.message)}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label>Description</Label>
-            <Textarea {...form.register("description")} />
-            {form.formState.errors.description && (
-              <p className="text-sm text-destructive">{String(form.formState.errors.description.message)}</p>
-            )}
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Price</Label>
-              <Input type="number" step="0.01" {...form.register("price")} />
-            </div>
-            <div className="space-y-2">
-              <Label>Category</Label>
-              <select
-                {...form.register("category")}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="wallets">Wallets</option>
-                <option value="bags">Bags</option>
-                <option value="jackets">Jackets</option>
-                <option value="accessories">Accessories</option>
-              </select>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label>Image URL</Label>
-            <Input {...form.register("imageUrl")} placeholder="https://..." />
-          </div>
-          <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting ? "Saving..." : "Save Product"}
-          </Button>
-        </form>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }

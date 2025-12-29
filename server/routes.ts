@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, hashPassword } from "./auth";
 import { api, errorSchemas } from "@shared/routes";
 import { z } from "zod";
+import passport from "passport";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -13,30 +14,8 @@ export async function registerRoutes(
   setupAuth(app);
 
   // === AUTH ===
-  app.post(api.auth.register.path, async (req, res, next) => {
-    try {
-      const { username, password } = api.auth.register.input.parse(req.body);
-      
-      const existingUser = await storage.getUserByUsername(username);
-      if (existingUser) {
-        return res.status(400).json({ message: "Username already exists" });
-      }
-
-      const hashedPassword = await hashPassword(password);
-      const user = await storage.createUser({ username, password: hashedPassword, role: "user" });
-
-      req.login(user, (err) => {
-        if (err) return next(err);
-        res.status(201).json(user);
-      });
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        return res.status(400).json({ message: err.errors[0].message });
-      }
-      next(err);
-    }
-  });
-
+  // No public registration for this brochure site
+  
   app.post(api.auth.login.path, (req, res, next) => {
     const passportAuth = (passport.authenticate("local", (err: any, user: any, info: any) => {
       if (err) return next(err);
@@ -121,73 +100,6 @@ export async function registerRoutes(
     } catch (err) {
       res.status(404).json({ message: "Product not found" });
     }
-  });
-
-  // === CART ===
-  app.get(api.cart.get.path, async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).json({ message: "Login required" });
-    const items = await storage.getCartItems((req.user as any).id);
-    res.json(items);
-  });
-
-  app.post(api.cart.addItem.path, async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).json({ message: "Login required" });
-    try {
-      const { productId, quantity } = api.cart.addItem.input.parse(req.body);
-      const userId = (req.user as any).id;
-      
-      const existingItem = await storage.getCartItem(userId, productId);
-      let item;
-      if (existingItem) {
-        item = await storage.updateCartItem(existingItem.id, existingItem.quantity + quantity);
-      } else {
-        item = await storage.addCartItem({ userId, productId, quantity });
-      }
-      res.json(item);
-    } catch (err) {
-      res.status(400).json({ message: "Invalid input" });
-    }
-  });
-
-  app.patch(api.cart.updateItem.path, async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).json({ message: "Login required" });
-    try {
-      const { quantity } = api.cart.updateItem.input.parse(req.body);
-      const item = await storage.updateCartItem(Number(req.params.id), quantity);
-      if (!item) return res.status(404).json({ message: "Item not found" });
-      res.json(item);
-    } catch (err) {
-      res.status(400).json({ message: "Invalid input" });
-    }
-  });
-
-  app.delete(api.cart.removeItem.path, async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).json({ message: "Login required" });
-    await storage.removeCartItem(Number(req.params.id));
-    res.sendStatus(200);
-  });
-
-  // === ORDERS ===
-  app.post(api.orders.create.path, async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).json({ message: "Login required" });
-    
-    const userId = (req.user as any).id;
-    const cartItems = await storage.getCartItems(userId);
-    
-    if (cartItems.length === 0) {
-      return res.status(400).json({ message: "Cart is empty" });
-    }
-
-    const order = await storage.createOrder(userId, cartItems);
-    await storage.clearCart(userId);
-    
-    res.status(201).json(order);
-  });
-
-  app.get(api.orders.list.path, async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).json({ message: "Login required" });
-    const orders = await storage.getOrders((req.user as any).id);
-    res.json(orders);
   });
 
   app.post(api.contact.submit.path, async (req, res) => {

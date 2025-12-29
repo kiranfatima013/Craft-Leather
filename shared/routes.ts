@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertUserSchema, insertProductSchema, users, products, cartItems, orders } from './schema';
+import { insertUserSchema, insertProductSchema, users, products } from './schema';
 
 // ============================================
 // SHARED ERROR SCHEMAS
@@ -32,15 +32,6 @@ export const api = {
       responses: {
         200: z.custom<typeof users.$inferSelect>(),
         401: errorSchemas.unauthorized,
-      },
-    },
-    register: {
-      method: 'POST' as const,
-      path: '/api/register',
-      input: z.object({ username: z.string(), password: z.string() }),
-      responses: {
-        201: z.custom<typeof users.$inferSelect>(),
-        400: errorSchemas.validation,
       },
     },
     logout: {
@@ -104,62 +95,6 @@ export const api = {
         204: z.void(),
         403: errorSchemas.unauthorized,
         404: errorSchemas.notFound,
-      },
-    },
-  },
-  cart: {
-    get: {
-      method: 'GET' as const,
-      path: '/api/cart',
-      responses: {
-        200: z.array(z.custom<typeof cartItems.$inferSelect & { product: typeof products.$inferSelect }>()),
-      },
-    },
-    addItem: {
-      method: 'POST' as const,
-      path: '/api/cart',
-      input: z.object({ productId: z.number(), quantity: z.number() }),
-      responses: {
-        200: z.custom<typeof cartItems.$inferSelect>(),
-        401: errorSchemas.unauthorized,
-      },
-    },
-    updateItem: {
-      method: 'PATCH' as const,
-      path: '/api/cart/:id',
-      input: z.object({ quantity: z.number() }),
-      responses: {
-        200: z.custom<typeof cartItems.$inferSelect>(),
-        401: errorSchemas.unauthorized,
-        404: errorSchemas.notFound,
-      },
-    },
-    removeItem: {
-      method: 'DELETE' as const,
-      path: '/api/cart/:id',
-      responses: {
-        200: z.void(),
-        401: errorSchemas.unauthorized,
-      },
-    },
-  },
-  orders: {
-    create: {
-      method: 'POST' as const,
-      path: '/api/orders',
-      input: z.object({}), // No input needed, takes from cart
-      responses: {
-        201: z.custom<typeof orders.$inferSelect>(),
-        400: errorSchemas.validation, // e.g., empty cart
-        401: errorSchemas.unauthorized,
-      },
-    },
-    list: {
-      method: 'GET' as const,
-      path: '/api/orders',
-      responses: {
-        200: z.array(z.custom<typeof orders.$inferSelect>()),
-        401: errorSchemas.unauthorized,
       },
     },
   },

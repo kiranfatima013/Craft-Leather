@@ -1,54 +1,56 @@
-import { type Product } from "@shared/schema";
-import { Button } from "@/components/ui/button";
-import { useCart } from "@/hooks/use-cart";
 import { Link } from "wouter";
+import { ArrowRight } from "lucide-react";
+import { type Product } from "@shared/schema";
 import { motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
 
-export function ProductCard({ product }: { product: Product }) {
-  const { addToCart } = useCart();
-  const { isPending } = addToCart;
+interface ProductCardProps {
+  product: Product;
+  index?: number;
+}
 
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    addToCart.mutate({ productId: product.id, quantity: 1 });
-  };
-
+export function ProductCard({ product, index = 0 }: ProductCardProps) {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="group relative flex flex-col overflow-hidden rounded-lg border bg-card transition-shadow hover:shadow-lg"
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+      className="group relative bg-white rounded-sm overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-border/50"
     >
-      <Link href={`/shop/${product.id}`} className="block overflow-hidden bg-muted aspect-[4/5]">
-        <img
-          src={product.imageUrl}
+      <div className="aspect-[4/5] overflow-hidden bg-secondary/10 relative">
+        <img 
+          src={product.imageUrl} 
           alt={product.name}
-          className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+          className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
         />
-      </Link>
-      <div className="flex flex-1 flex-col p-4">
-        <h3 className="text-lg font-bold text-foreground font-serif">
-          <Link href={`/shop/${product.id}`}>{product.name}</Link>
-        </h3>
-        <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{product.description}</p>
-        <div className="mt-4 flex flex-1 items-end justify-between gap-4">
-          <p className="text-lg font-medium text-primary">${Number(product.price).toFixed(2)}</p>
-          <Button 
-            onClick={handleAddToCart} 
-            disabled={isPending}
-            size="sm"
-            className="w-full sm:w-auto"
-          >
-            {isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              "Add to Cart"
-            )}
-          </Button>
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+      </div>
+
+      <div className="p-6">
+        <div className="flex justify-between items-start mb-2">
+          <p className="text-xs font-bold tracking-wider text-primary/60 uppercase">
+            {product.category}
+          </p>
+          <p className="font-serif font-medium text-lg text-primary">
+            ${Number(product.price).toFixed(2)}
+          </p>
         </div>
+        
+        <h3 className="font-serif text-xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors">
+          {product.name}
+        </h3>
+        
+        <p className="text-muted-foreground text-sm line-clamp-2 mb-6">
+          {product.description}
+        </p>
+
+        <Link 
+          href={`/contact?subject=${encodeURIComponent(product.name)}`}
+          className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/80 transition-colors uppercase tracking-wide group/btn"
+        >
+          Inquire Now
+          <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+        </Link>
       </div>
     </motion.div>
   );
