@@ -1,0 +1,149 @@
+Project Name
+
+H&K Leather Craft
+
+Objective
+
+Build a fully functional full-stack e-commerce web application for a premium leather brand named H&K Leather Craft, including frontend, backend, authentication, cart, and product management.
+
+Tech Stack (Use These by Default)
+
+Frontend: HTML, CSS, JavaScript (or React if preferred)
+
+Backend: Node.js with Express
+
+Database: SQLite or PostgreSQL
+
+Authentication: Session-based or JWT
+
+Styling: Clean, modern, responsive UI
+
+Brand Description
+
+H&K Leather Craft sells premium leather products including:
+
+Leather Jackets
+
+Leather Wallets
+
+Leather Accessories
+
+Design should reflect luxury, craftsmanship, and durability.
+
+Required Pages & Routes
+
+Create the following pages and backend routes:
+
+Home (/)
+
+Hero section with brand tagline
+
+Featured leather products
+
+“Shop Now” button linking to /shop
+
+Shop (/shop)
+
+Dynamic product listing from database
+
+Categories: Jackets, Wallets, Accessories
+
+Product cards with:
+
+Image
+
+Name
+
+Price
+
+Add to Cart button
+
+About (/about)
+
+Brand story and mission
+
+Contact (/contact)
+
+Contact form (name, email, message)
+
+Backend form submission handling
+
+Global Header (All Pages)
+
+Brand name H&K Leather Craft on the left
+
+Navigation links: Home, Shop, About, Contact
+
+Login and Cart buttons on the top-right
+
+Cart icon must show item count
+
+Authentication
+
+User signup and login
+
+Password hashing
+
+Maintain user session
+
+Only logged-in users can checkout
+
+Cart & Checkout
+
+Add/remove products to cart
+
+Update product quantity
+
+Persist cart per user
+
+Checkout page with order summary
+
+Order saved to database
+
+Backend Requirements
+
+REST API endpoints for:
+
+Authentication
+
+Products (CRUD)
+
+Cart management
+
+Orders
+
+Database schema for:
+
+Users
+
+Products
+
+Carts
+
+Orders
+
+Admin Functionality (Basic)
+
+Admin can add/edit/delete products
+
+Admin access protected by role
+
+Design & UX
+
+Leather-themed color palette (brown, tan, black)
+
+Clean typography
+
+Fully responsive layout
+
+User-friendly UI
+
+Final Instructions
+
+Generate complete runnable code
+
+Include database setup and seed data
+
+Ensure frontend and backend are connected
+
+App must run successfully in Replit environment
