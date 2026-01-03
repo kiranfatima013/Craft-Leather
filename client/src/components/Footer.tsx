@@ -40,10 +40,9 @@ export function Footer() {
         <div>
           <h3 className="font-serif text-lg font-semibold mb-6 text-white">Contact</h3>
           <address className="not-italic text-primary-foreground/70 space-y-3">
-            <p>123 Craftsman Lane</p>
-            <p>Leather District, NY 10012</p>
-            <p className="pt-2">hello@hkleather.com</p>
-            <p>+1 (555) 123-4567</p>
+            <p>Karachi Garden East</p>
+            <p className="pt-2">H&K@gmail.com</p>
+            <p>03061234567</p>
           </address>
         </div>
       </div>

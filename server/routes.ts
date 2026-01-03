@@ -125,32 +125,53 @@ async function seedDatabase() {
     
     const seedProducts = [
       {
-        name: "Classic Leather Jacket",
-        description: "Premium full-grain leather jacket with vintage finish.",
+        name: "Classic Biker Leather Jacket",
+        description: "Timeless biker-style jacket made from premium full-grain cowhide leather. Features a vintage distressed finish, heavy-duty asymmetrical zippers, and a quilted lining for superior comfort and durability.",
         price: "299.99",
         category: "jackets",
-        imageUrl: "https://placehold.co/600x400/5D4037/FFFFFF?text=Classic+Leather+Jacket"
+        imageUrl: "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&q=80&w=800"
       },
       {
-        name: "Slim Bifold Wallet",
-        description: "Minimalist leather wallet with RFID protection.",
+        name: "Cafe Racer Leather Jacket",
+        description: "Sleek and minimalist cafe racer jacket crafted from supple lambskin leather. Features a snap-tab collar, streamlined silhouette, and reinforced shoulder panels for a clean, sophisticated look.",
+        price: "349.99",
+        category: "jackets",
+        imageUrl: "https://images.unsplash.com/photo-1520975954732-35dd22299614?auto=format&fit=crop&q=80&w=800"
+      },
+      {
+        name: "Heritage Bomber Jacket",
+        description: "Classic flight-inspired bomber jacket made from heavy-duty leather. Features rib-knit cuffs and hem, a plush shearling collar, and multiple functional pockets for a rugged yet refined style.",
+        price: "399.99",
+        category: "jackets",
+        imageUrl: "https://images.unsplash.com/photo-1521223890158-f9f7c3d5bab3?auto=format&fit=crop&q=80&w=800"
+      },
+      {
+        name: "Slim Bifold Leather Wallet",
+        description: "Handcrafted minimalist bifold wallet made from premium Italian vegetable-tanned leather. Features six card slots, a full-length bill compartment, and RFID protection to keep your data secure.",
         price: "49.99",
         category: "wallets",
-        imageUrl: "https://placehold.co/600x400/8D6E63/FFFFFF?text=Slim+Wallet"
+        imageUrl: "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&q=80&w=800"
+      },
+      {
+        name: "Rustic Trifold Wallet",
+        description: "Rugged trifold wallet crafted from durable crazy horse leather. Develops a unique patina over time. Features a spacious interior with multiple card slots and a secure coin pocket.",
+        price: "59.99",
+        category: "wallets",
+        imageUrl: "https://images.unsplash.com/photo-1559564484-e484c2043902?auto=format&fit=crop&q=80&w=800"
       },
       {
         name: "Leather Messenger Bag",
-        description: "Durable laptop bag for professionals.",
+        description: "Handmade full-grain leather messenger bag designed for the modern professional. Spacious enough for a 15-inch laptop, featuring antique brass hardware and a padded adjustable shoulder strap.",
         price: "159.99",
         category: "accessories",
-        imageUrl: "https://placehold.co/600x400/4E342E/FFFFFF?text=Messenger+Bag"
+        imageUrl: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&q=80&w=800"
       },
-       {
-        name: "Vintage Belt",
-        description: "Handcrafted leather belt with brass buckle.",
+      {
+        name: "Vintage Leather Belt",
+        description: "Premium handcrafted leather belt with a solid brass buckle. Made from thick, durable leather that will last for years and gain character with every wear.",
         price: "39.99",
         category: "accessories",
-        imageUrl: "https://placehold.co/600x400/A1887F/FFFFFF?text=Vintage+Belt"
+        imageUrl: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&q=80&w=800"
       }
     ];
 
@@ -158,13 +179,16 @@ async function seedDatabase() {
       await storage.createProduct(p);
     }
     
-    // Create admin user
-    const hashedAdminPassword = await hashPassword("admin123");
-    await storage.createUser({
-      username: "admin",
-      password: hashedAdminPassword,
-      role: "admin"
-    });
+    // Create admin user if not exists
+    const adminUser = await storage.getUserByUsername("admin");
+    if (!adminUser) {
+      const hashedAdminPassword = await hashPassword("admin123");
+      await storage.createUser({
+        username: "admin",
+        password: hashedAdminPassword,
+        role: "admin"
+      });
+    }
     
     console.log("Seeding complete.");
   }
