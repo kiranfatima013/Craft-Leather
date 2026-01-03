@@ -11,5 +11,22 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      (function (d, t) {
+        var g = document.createElement(t),
+            s = d.getElementsByTagName(t)[0];
+        g.src = "https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js";
+        g.defer = true;
+        g.async = true;
+        s.parentNode.insertBefore(g, s);
+
+        g.onload = function () {
+          window.vapiSDK.run({
+            apiKey: "07e79bcb-2fca-41c0-b8f6-ad0ecc0d4410", 
+            squadId: "74dba3e7-8b4c-4d6b-aa46-9285851a4b72",
+          });
+        };
+      })(document, "script");
+    </script>
   </body>
 </html>
